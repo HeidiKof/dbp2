@@ -8,6 +8,7 @@
         <!--
         Auflistung der Klassen, die von dieser PersistenceUnit verwaltet werden
         -->
+        <class>at.campus02.dbp2.repository.Customer</class>
 
         <properties>
             <!--
