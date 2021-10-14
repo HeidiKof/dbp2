@@ -27,17 +27,35 @@ public class CustomerRepositoryJpa implements CustomerRepository {
 
     @Override
     public Customer read(Integer id) {
-        return null;
+        if (id == null)
+            return null;
+        return manager.find(Customer.class, id);
     }
 
     @Override
     public Customer update(Customer customer) {
-        return null;
+        if (customer == null)
+            return null;
+        if (customer.getId() == null || read(customer.getId()) == null) {
+            throw new IllegalArgumentException("Customer does not exist, cannot update!");
+        }
+        manager.getTransaction().begin();
+        Customer managed = manager.merge(customer);
+        manager.getTransaction().commit();
+        return managed;
     }
 
     @Override
     public boolean delete(Customer customer) {
-        return false;
+        if (customer == null)
+            return false;
+        if (read(customer.getId()) == null)
+            throw new IllegalArgumentException("Customer does not exist anymore, deleting is pointless!");
+        manager.getTransaction().begin();
+        Customer managed = manager.merge(customer);
+        manager.remove(managed);
+        manager.getTransaction().commit();
+        return true;
     }
 
     @Override
