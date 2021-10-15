@@ -153,4 +153,81 @@ public class CustomerRepositoryQuerySpec {
 //                        && premium.containsAll(expectedPremium)
 //        );
     }
+
+    @Test
+    public void findByAccountTypeNullReturnsEmptyList() {
+        // given
+        setupCommonTestData();
+
+        // when
+        List<Customer> result = repository.findByAccountType(null);
+
+        // then
+        assertThat(result, is(empty()));
+    }
+    //#endregion
+
+    //#region Query: findByLastName
+    @Test
+    public void findByLastNameReturnsMatchingCustomers() {
+        // given
+        setupCommonTestData();
+
+        // when
+        List<Customer> matching = repository.findByLastname("orn");
+
+        // then
+        assertThat(matching, contains(customer4, customer7));
+    }
+
+    @Test
+    public void findByLastNameReturnsCaseInsensitivelyMatchingCustomers() {
+        // given
+        setupCommonTestData();
+
+        // when
+        List<Customer> matching = repository.findByLastname("eBEr");
+
+        // then
+        assertThat(matching, contains(customer5, customer6));
+    }
+
+    @Test
+    public void findByLastNameWithNullOrEmptyStringReturnsEmptyList() {
+        // given
+        setupCommonTestData();
+
+        // when
+        List<Customer> matching = repository.findByLastname("");
+
+        // then
+        assertThat(matching, is(empty()));
+
+        // and when
+        matching = repository.findByLastname(null);
+
+        // then
+        assertThat(matching, is(empty()));
+    }
+    //#endregion
+
+    //#region Query: findAllRegisteredAfter
+    @Test
+    public void findAllRegisteredAfterReturnsMatchingCustomers() {
+        // given
+        setupCommonTestData();
+
+        // when
+        List<Customer> matching = repository.findAllRegisteredAfter(LocalDate.of(2021, 4, 4));
+
+        //then
+        assertThat(matching, containsInAnyOrder(customer5, customer6, customer7));
+
+        // and when
+        matching = repository.findAllRegisteredAfter(LocalDate.of(2021, 4, 3));
+
+        //then
+        assertThat(matching, containsInAnyOrder(customer4, customer5, customer6, customer7));
+    }
+    //#endregion
 }

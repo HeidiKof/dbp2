@@ -90,6 +90,16 @@ public class CustomerRepositoryCrudSpec {
         // then
         assertFalse(result);
     }
+
+    @Test
+    public void createCustomerWithNullAsAccountTypeThrowsException() {
+        // given
+        Customer notValid = initDefaultCustomer();
+        notValid.setAccountType(null);
+
+        // when / then
+        assertThrows(RuntimeException.class,() -> repository.create(notValid));
+    }
     //#endregion
 
     //#region CRUD: read
