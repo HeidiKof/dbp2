@@ -2,6 +2,7 @@ import at.campus02.dbp2.relations.Animal;
 import at.campus02.dbp2.relations.Species;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.hamcrest.*;
 import javax.persistence.EntityManager;
@@ -62,6 +63,7 @@ public class OneToManyTests {
     }
 
     @Test
+    @Disabled("only works without orphanRemoval - enable after setting orphanRemoval to false")
     public void updateExampleWithCorrectingReferences() {
         Animal owl = new Animal("Professor Thaddeus");
         Animal weasel = new Animal("Sprinkle");
@@ -127,5 +129,47 @@ public class OneToManyTests {
         mergedBird = manager.merge(bird);
         manager.refresh(mergedBird);
         assertThat(mergedBird.getAnimals().size(), is(1));
+    }
+
+    @Test
+    public void orphanRemovalDeletesOrphansFromDatabase() {
+        // given
+        Animal owl = new Animal("Professor Thaddeus");
+        Animal weasel = new Animal("Sprinkle");
+        Species bird = new Species("Bird");
+
+        // Referenzen für DB
+        owl.setSpecies(bird);
+        // FEHLER -> den wollen wir dann korrigieren
+        weasel.setSpecies(bird);
+
+        // Referenzen für CASCADE
+        bird.addAnimals(owl);
+        bird.addAnimals(weasel);
+
+        // Speichern
+        manager.getTransaction().begin();
+        manager.persist(bird);
+        manager.getTransaction().commit();
+
+        manager.clear();
+
+        // when
+        manager.getTransaction().begin();
+        bird.getAnimals().remove(weasel);
+        manager.merge(bird);
+        manager.getTransaction().commit();
+
+        manager.clear();
+
+        // then
+        Animal sprinkleFromDb = manager.find(Animal.class, weasel.getId());
+        // bei Verwendung von orphanRemoval wird Sprinkle aus der DB gelöscht.
+        assertThat(sprinkleFromDb, is(nullValue()));
+
+        Species refreshedBird = manager.merge(bird);
+        manager.refresh(refreshedBird);
+
+        assertThat(refreshedBird.getAnimals().size(), is(1));
     }
 }
